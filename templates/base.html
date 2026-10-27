@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Store Console{% endblock %} · Store Console</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% if session.get('role') == 'admin' %}
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="{{ url_for('admin_dashboard.admin_dashboard') }}"><span class="brand-mark"><i class="bi bi-bag-check-fill"></i></span><span>Store<span class="brand-muted">Console</span></span></a>
+    <div class="nav-caption">WORKSPACE</div>
+    <nav aria-label="Main navigation">
+      <a href="{{ url_for('admin_dashboard.admin_dashboard') }}" class="{% if request.endpoint == 'admin_dashboard.admin_dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Overview</a>
+      <a href="{{ url_for('product.products') }}" class="{% if request.endpoint in ['product.products','product.product_info','product.add_product','product.edit_product'] %}active{% endif %}"><i class="bi bi-box-seam"></i> Products</a>
+      <a href="{{ url_for('inventory.view_inventory') }}" class="{% if request.endpoint == 'inventory.view_inventory' %}active{% endif %}"><i class="bi bi-boxes"></i> Inventory</a>
+      <a href="{{ url_for('inventory_details.view_all_inventory_details') }}" class="{% if request.endpoint == 'inventory_details.view_all_inventory_details' %}active{% endif %}"><i class="bi bi-clock-history"></i> Stock history</a>
+      <a href="{{ url_for('sales.view_sales') }}" class="{% if request.endpoint == 'sales.view_sales' %}active{% endif %}"><i class="bi bi-receipt"></i> Sales</a>
+      <a href="{{ url_for('prediction.predict_pnl') }}" class="{% if request.endpoint == 'prediction.predict_pnl' %}active{% endif %}"><i class="bi bi-graph-up-arrow"></i> Forecast</a>
+      <a href="{{ url_for('reports.view_reports') }}" class="{% if request.endpoint == 'reports.view_reports' %}active{% endif %}"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+    </nav>
+    <div class="sidebar-bottom"><div class="account"><span class="avatar">{{ (session.get('user','A')[:1] or 'A')|upper }}</span><span><b>{{ session.get('user','Administrator') }}</b><small>Administrator</small></span></div>
+      <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="nav-logout" type="submit"><i class="bi bi-box-arrow-left"></i> Sign out</button></form>
+    </div>
+  </aside>
+  <div class="workspace"><header class="topbar"><button class="icon-button menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar"><i class="bi bi-list"></i></button><div class="breadcrumb">Admin workspace <i class="bi bi-chevron-right"></i> <strong>{% block section %}Overview{% endblock %}</strong></div><span class="topbar-date"><i class="bi bi-calendar3"></i> {{ now().strftime('%b %d, %Y') if now is defined else '' }}</span></header>
+    <main class="page-content">
+      {% with messages=get_flashed_messages(with_categories=true) %}{% if messages %}<div class="flash-stack">{% for category,message in messages %}<div class="flash flash-{{ 'error' if category in ['danger','error'] else 'success' if category=='success' else 'info' }}" role="status"><i class="bi {{ 'bi-check-circle' if category=='success' else 'bi-exclamation-circle' }}"></i><span>{{ message }}</span></div>{% endfor %}</div>{% endif %}{% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="footer">Store Console <span>·</span> Inventory, orders, and reporting</footer>
+  </div>
+</div>
+{% else %}<main class="auth-layout">{% block auth_content %}{% endblock %}</main>{% endif %}
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% block scripts %}{% endblock %}
+</body></html>
